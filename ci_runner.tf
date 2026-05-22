@@ -11,14 +11,28 @@ resource "azurerm_role_assignment" "ci_runner_acr" {
   skip_service_principal_aad_check = true
 }
 
+resource "azurerm_virtual_network" "ci_runner" {
+  name                = "ci-runner-vnet"
+  location            = "centralus"
+  resource_group_name = azurerm_resource_group.rg.name
+  address_space       = ["10.10.0.0/16"]
+}
+
+resource "azurerm_subnet" "ci_runner_vm" {
+  name                 = "ci-runner-vm-subnet"
+  resource_group_name  = azurerm_resource_group.rg.name
+  virtual_network_name = azurerm_virtual_network.ci_runner.name
+  address_prefixes     = ["10.10.1.0/24"]
+}
+
 resource "azurerm_network_interface" "ci_runner" {
   name                = "ci-runner-nic"
-  location            = "westus"
+  location            = "centralus"
   resource_group_name = azurerm_resource_group.rg.name
 
   ip_configuration {
     name                          = "internal"
-    subnet_id                     = azurerm_subnet.ci_runner.id
+    subnet_id                     = azurerm_subnet.ci_runner_vm.id
     private_ip_address_allocation = "Dynamic"
   }
 }
@@ -31,8 +45,8 @@ resource "tls_private_key" "ci_runner" {
 resource "azurerm_linux_virtual_machine" "ci_runner" {
   name                = "ci-runner-vm"
   resource_group_name = azurerm_resource_group.rg.name
-  location            = "westus"
-  size                = "Standard_B2s"
+  location            = "centralus"
+  size                = "Standard_DS1_v2"
   admin_username      = "azureuser"
 
   disable_password_authentication = true
