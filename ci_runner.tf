@@ -46,7 +46,7 @@ resource "azurerm_linux_virtual_machine" "ci_runner" {
   name                = "ci-runner-vm"
   resource_group_name = azurerm_resource_group.rg.name
   location            = "centralus"
-  size                = "Standard_DS1_v2"
+  size                = "Standard_DC2s_v3"
   admin_username      = "azureuser"
 
   disable_password_authentication = true
